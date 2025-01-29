@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Rain</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: black;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix"></canvas>
+    <script>
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas size to window size
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Matrix characters
+        const chars = '01';
+        const fontSize = 14;
+        const columns = Math.floor(canvas.width / fontSize);
+        let drops = [];
+        let mouseX = 0;
+        let mouseY = 0;
+
+        // Initialize drops
+        for (let i = 0; i < columns; i++) {
+            drops[i] = {
+                y: Math.random() * canvas.height,
+                speed: 1 + Math.random() * 2
+            };
+        }
+
+        // Mouse move handler
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            // Affect nearby drops
+            drops.forEach((drop, i) => {
+                const x = i * fontSize;
+                const distance = Math.sqrt(Math.pow(x - mouseX, 2) + Math.pow(drop.y - mouseY, 2));
+                if (distance < 100) {
+                    drop.speed = 5 + Math.random() * 3;
+                }
+            });
+        });
+
+        // Animation
+        function draw() {
+            // Semi-transparent black background for trail effect
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#0F0';
+            ctx.font = fontSize + 'px monospace';
+
+            // Draw each drop
+            drops.forEach((drop, i) => {
+                const x = i * fontSize;
+                const char = chars[Math.floor(Math.random() * chars.length)];
+                
+                // Vary color based on distance from mouse
+                const distance = Math.sqrt(Math.pow(x - mouseX, 2) + Math.pow(drop.y - mouseY, 2));
+                if (distance < 100) {
+                    ctx.fillStyle = '#FFF';
+                } else {
+                    ctx.fillStyle = '#0F0';
+                }
+
+                ctx.fillText(char, x, drop.y);
+
+                // Move drop
+                drop.y += drop.speed;
+
+                // Reset drop when it reaches bottom
+                if (drop.y > canvas.height) {
+                    drop.y = 0;
+                    drop.speed = 1 + Math.random() * 2;
+                }
+            });
+
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+    </script>
+</body>
+</html>
